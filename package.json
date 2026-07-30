@@ -1,0 +1,54 @@
+{
+  "name": "devvault-mcp",
+  "version": "0.1.0",
+  "description": "Local-first, LLM-safe secrets vault over the Model Context Protocol. Your AI can use your secrets — it can never read them.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "devvault-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsup src/server.ts --format esm --clean --target node22 --external cross-keychain"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "secrets",
+    "vault",
+    "ai",
+    "security",
+    "prompt-injection",
+    "model-context-protocol"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "cross-keychain": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  },
+  "main": "dist/server.js",
+  "author": "Alex <alex@letrobotswork.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ConjureGanja/devvault-mcp.git"
+  },
+  "homepage": "https://github.com/ConjureGanja/devvault-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/ConjureGanja/devvault-mcp/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
