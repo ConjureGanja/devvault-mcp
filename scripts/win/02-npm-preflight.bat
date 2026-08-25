@@ -43,14 +43,30 @@ if !NODEMAJOR! LSS 22 (
 echo.
 
 REM ---------- npm name availability ----------
-echo [2/6] Checking whether the npm name "devvault-mcp" is free...
-for /f "tokens=*" %%c in ('curl -s -o nul -w "%%{http_code}" https://registry.npmjs.org/devvault-mcp') do set NAMECODE=%%c
+echo [2/6] Checking the npm name in package.json...
+for /f "usebackq tokens=*" %%n in (`node -p "require('./package.json').name"`) do set PKG=%%n
+if "!PKG!"=="" (
+  echo    FAIL: could not read "name" from package.json.
+  set FAILED=1
+  goto :summary
+)
+echo    package.json name: !PKG!
+for /f "tokens=*" %%c in ('curl -s -o nul -w "%%{http_code}" https://registry.npmjs.org/!PKG!') do set NAMECODE=%%c
 if "!NAMECODE!"=="404" (
-  echo    OK - "devvault-mcp" is unpublished and available.
+  echo    OK - "!PKG!" is unpublished and available.
 ) else if "!NAMECODE!"=="200" (
-  echo    NOTE: "devvault-mcp" already exists on npm.
-  echo          If it is not yours, change "name" in package.json to
-  echo          a scoped name such as @conjureganja/devvault-mcp.
+  echo    STOP: "!PKG!" ALREADY EXISTS on npm.
+  echo.
+  echo          Look at what is published there before going further:
+  echo            https://www.npmjs.com/package/!PKG!
+  echo.
+  echo          If that page shows a DIFFERENT product than this repo,
+  echo          publishing over it breaks every existing install of it.
+  echo          Choose a different name in package.json instead.
+  echo.
+  echo          If it is an older version of THIS package, that is fine
+  echo          - just bump "version" in package.json before publishing.
+  set FAILED=1
 ) else (
   echo    Could not reach the npm registry ^(HTTP !NAMECODE!^). Skipping.
 )

@@ -8,7 +8,8 @@ REM  machine because dist/ is sitting right there" failure.
 REM ===================================================================
 setlocal enabledelayedexpansion
 title DevVault - verify install
-set PKG=devvault-mcp
+cd /d "%~dp0..\.."
+for /f "usebackq tokens=*" %%n in (`node -p "require('./package.json').name"`) do set PKG=%%n
 set WORK=%TEMP%\devvault-verify
 
 echo.
@@ -18,20 +19,20 @@ echo  ============================================================
 echo.
 
 echo [1/3] Is it on the registry yet?
-for /f "tokens=*" %%c in ('curl -s -o nul -w "%%{http_code}" https://registry.npmjs.org/%PKG%') do set CODE=%%c
+for /f "tokens=*" %%c in ('curl -s -o nul -w "%%{http_code}" https://registry.npmjs.org/!PKG!') do set CODE=%%c
 if not "!CODE!"=="200" (
   echo    Not found on npm yet ^(HTTP !CODE!^).
   echo    If you just published, wait a minute and rerun this script.
   goto :end
 )
-echo    OK - %PKG% is live on npm.
+echo    OK - !PKG! is live on npm.
 echo.
 
 echo [2/3] Installing into a clean folder: %WORK%
 if exist "%WORK%" rmdir /s /q "%WORK%"
 mkdir "%WORK%"
 cd /d "%WORK%"
-call npm install %PKG% --no-save
+call npm install !PKG! --no-save
 if errorlevel 1 (
   echo    FAIL: a clean install of the published package failed.
   echo          Something in the tarball is broken. Fix, bump the
@@ -47,7 +48,7 @@ echo     No crash within a couple of seconds means it started fine.
 echo     Press Ctrl+C to stop it, then close this window.^)
 echo.
 echo    ------------------------------------------------------------
-call npx -y %PKG%
+call npx -y !PKG!
 echo    ------------------------------------------------------------
 echo.
 
@@ -58,7 +59,7 @@ echo     {
 echo       "mcpServers": {
 echo         "devvault": {
 echo           "command": "npx",
-echo           "args": ["-y", "%PKG%"]
+echo           "args": ["-y", "!PKG!"]
 echo         }
 echo       }
 echo     }

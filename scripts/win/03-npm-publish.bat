@@ -31,6 +31,23 @@ set /p OPEN2FA="Open the npm 2FA settings page now? (y/n): "
 if /i "!OPEN2FA!"=="y" start "" "https://www.npmjs.com/settings/~/profile"
 echo.
 
+REM ---------- name collision guard ----------
+for /f "usebackq tokens=*" %%n in (`node -p "require('./package.json').name"`) do set PKG=%%n
+echo   Package name from package.json: !PKG!
+for /f "tokens=*" %%c in ('curl -s -o nul -w "%%{http_code}" https://registry.npmjs.org/!PKG!') do set NAMECODE=%%c
+if "!NAMECODE!"=="200" (
+  echo.
+  echo   WARNING: "!PKG!" is ALREADY PUBLISHED on npm.
+  echo            https://www.npmjs.com/package/!PKG!
+  echo.
+  echo   If that is a different product from this repo, publishing here
+  echo   replaces it for everyone who installs that name. Stop and pick
+  echo   a different name unless you are certain.
+  echo.
+  pause
+)
+echo.
+
 REM ---------- login ----------
 echo [1/3] Checking npm login...
 call npm whoami >nul 2>&1
@@ -72,7 +89,7 @@ if errorlevel 1 (
   echo      * "You do not have permission" / 403 with a similar name:
   echo        npm blocked the name for being too close to an existing
   echo        package. Fix: change "name" in package.json to a scoped
-  echo        name, e.g. "@!NPMUSER!/devvault-mcp", then rerun.
+  echo        name, e.g. "@!NPMUSER!/<name^>", then rerun.
   echo.
   echo      * "You cannot publish over the previously published
   echo        version": bump "version" in package.json and rerun.
@@ -89,7 +106,7 @@ echo   PUBLISHED
 echo  ============================================================
 echo.
 echo   Your package page ^(may take a minute to appear^):
-echo     https://www.npmjs.com/package/devvault-mcp
+echo     https://www.npmjs.com/package/!PKG!
 echo.
 echo   Next: run 04-verify-install.bat to install it the way a
 echo   stranger would, and confirm it actually works.

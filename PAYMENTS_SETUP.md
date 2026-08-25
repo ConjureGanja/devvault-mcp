@@ -16,6 +16,7 @@ So there is no npm setting to repair. What's actually true right now:
 |---|---|
 | `devvault-mcp` on npm | **Not published.** Registry returns 404 — the name is free and waiting for you. |
 | `devvault` on npm | Name is taken (registered 18 Aug 2026) but has **zero published versions**. If that was you, it's a reserved shell. |
+| `mcp-safeguard` on npm | **Published** — v0.1.0, 3 Aug 2026, maintainer `wizardconjure`. See the name note below. |
 | Stripe live "Pro Plan" | Exists — **$19.00/month**, recurring, product `prod_V3GpNRPxVW88PV` |
 | Stripe live "Enterprise Plan" | Exists — **$36.99/month**, recurring, product `prod_V3GqaucTXwh7WE` |
 | Stripe payment links | **None.** Zero. |
@@ -25,6 +26,25 @@ So there is no npm setting to repair. What's actually true right now:
 Nothing is failing. Nothing was ever connected. You built two price tags and no cash register, and pointed both at a shop that hasn't opened.
 
 **The real gap is this:** a Stripe product with no payment link is a private note to yourself. There is no URL a human being can click to give you $19. That is the actual fix, and it takes about ten minutes.
+
+---
+
+## About the name `mcp-safeguard`
+
+That name is live on npm and it is yours (maintainer `wizardconjure`, your email) — but **it is a different product from this repo**, so it is not a name DevVault can simply move into.
+
+| | `mcp-safeguard` v0.1.0 (published) | this repo |
+|---|---|---|
+| What it is | CLI that **scans** MCP tool definitions for risks | MCP **server** that holds secrets |
+| Ships | `dist/cli.js`, bin `mcp-safeguard` | `dist/server.js`, bin `devvault-mcp` |
+| Invoked as | `npx mcp-safeguard ./tools.json` | an MCP server in a client config |
+| Dependencies | zero | MCP SDK + zod |
+| License | LGPL-2.1-only | Apache-2.0 |
+| Source | `ConjureGanja/mcp-security-tools`, `packages/mcpscan` | `ConjureGanja/devvault-mcp` |
+
+Both are MCP security tools, which is exactly why they're easy to conflate. But publishing this repo's code under `mcp-safeguard` would replace a working scanner with an unrelated secrets vault at the same install name — anyone whose CI runs `npx --yes mcp-safeguard ./tools.json` would get a server that waits on stdin and hangs their pipeline. **Don't publish over it.**
+
+That leaves a genuine decision about which product the $19/$36.99 plans belong to, and it's yours to make — see "Which product are you selling?" at the end of this document. The Stripe setup in Part 1 is identical either way, so do that first; it is not blocked on the answer.
 
 ---
 
@@ -104,7 +124,9 @@ Run `scripts\win\05-verify-payment-links.bat`, paste both links in, and it confi
 
 # PART 2 — npm: publish the free package
 
-This is the layer that makes layer 1 worth anything. `devvault-mcp` is free on npm right now; that won't stay true forever.
+This is the layer that makes layer 1 worth anything.
+
+The scripts below read the package name straight out of `package.json`, so they work whatever you decide to call it — and they stop you if that name is already published to something else.
 
 ### 2.1 npm account with 2FA — non-negotiable
 
@@ -135,7 +157,8 @@ Handles login, shows the tarball one more time, makes you type `PUBLISH` in caps
 
 If it fails, the script prints the fix. The two you're most likely to hit:
 
-- **403, name too similar to an existing package** — npm's typosquat filter may reject `devvault-mcp` because `devvault` already exists. This is a genuine possibility given that name is registered. Fix: change `"name"` in `package.json` to a scoped name, `@conjureganja/devvault-mcp`, and rerun. Scoped names bypass the filter entirely and cost nothing when public.
+- **403, name too similar to an existing package** — npm's typosquat filter may reject `devvault-mcp` because `devvault` already exists. This is a genuine possibility given that name is registered. Fix: change `"name"` in `package.json` to a scoped name, `@wizardconjure/devvault-mcp`, and rerun. Scoped names bypass the filter entirely and cost nothing when public.
+- **The preflight refuses to continue because the name is already published** — that guard exists specifically to stop you from overwriting `mcp-safeguard`. Pick a free name rather than forcing past it.
 - **OTP required / invalid** — your 2FA code expired. Rerun with a fresh one.
 
 ### 2.4 Verify like a stranger
@@ -153,7 +176,7 @@ Then point Claude Desktop at the published package rather than your local path:
   "mcpServers": {
     "devvault": {
       "command": "npx",
-      "args": ["-y", "devvault-mcp"]
+      "args": ["-y", "<your published package name>"]
     }
   }
 }
@@ -195,3 +218,17 @@ All scripts live in `scripts\win\`. Double-click, or run from a terminal. They'r
 | `05-verify-payment-links.bat` | Confirms your payment links are live | Yes — never touches your Stripe key |
 
 None of these scripts ask for, store, or transmit a Stripe secret key. For a tool whose entire premise is that secrets don't travel, it would be poor form to start the billing setup by pasting a live API key into a batch file.
+
+---
+
+## Open decision: which product are you selling?
+
+The Stripe plans exist; what they *entitle* you to is still undecided, and the `mcp-safeguard` name makes that concrete. Three coherent answers:
+
+**1. The plans belong to the scanner (`mcp-safeguard`), not the vault.** A CI-gating security scanner is honestly the easier sell of the two — it already produces a pass/fail a team cares about, and the paid tier writes itself: more rules, a hosted dashboard, org-wide reporting. If this is it, the pricing links go in the `mcp-security-tools` README and DevVault stays free for now.
+
+**2. The plans belong to DevVault, which keeps a name of its own.** Publish as `devvault-mcp` (or scoped), and the paid tier is the encrypted team-sync relay from the launch brief. This is the plan already written down — it just needs users first.
+
+**3. "MCP Safeguard" becomes the umbrella brand for both.** The scanner keeps `mcp-safeguard`; the vault ships alongside as a scoped sibling such as `@wizardconjure/safeguard-vault`, and one subscription covers the suite. Most work, best story, and the only option where the shared name is an asset rather than a collision.
+
+Whichever you pick, Part 1 is unchanged — the cash register is the same register.
