@@ -123,6 +123,8 @@ You asked about monetizing — here's exactly how it bolts onto what exists, and
 **Build order when the time comes:**
 1. 🤖 **Sync relay** — small server, ciphertext in / ciphertext out, never holds a key. I can build this.
 2. 🟢 **Stripe** — you have a Stripe connector available here. You create the account + products (Test mode first, fake card `4242 4242 4242 4242`); I wire Checkout + the signature-verified webhook that flips a user to Pro. Flip to Live only after business + bank details are in.
+
+   > **Update, 25 Aug 2026 — see `PAYMENTS_SETUP.md`.** The live Stripe products now exist (Pro $19/mo, Enterprise $36.99/mo) but have no payment links, so nothing is purchasable yet. Worth stating plainly because it's a common and reasonable assumption: **npm has no author-monetization feature** — you cannot attach a payment plan to a package there, and Stripe on npmjs.com is only npm billing *you*. The npm side of monetization is distribution, not revenue. `PAYMENTS_SETUP.md` has the click-by-click fix plus `.bat` scripts in `scripts/win/`.
 3. 🔴 **HIRE a lawyer** — Terms of Service + liability disclaimer before taking payment. A secrets product carries real liability; a few hundred dollars now is cheap insurance.
 4. 🟢 **Instrument the funnel** — install → active → team-invite → paid. You can't improve conversion you can't see.
 
